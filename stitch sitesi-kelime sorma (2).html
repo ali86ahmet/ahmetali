@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Turkish Word Quiz</title>
+    <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin />
+    <link
+      rel="stylesheet"
+      as="style"
+      onload="this.rel='stylesheet'"
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;700;900&family=Spline+Sans:wght@400;500;700&display=swap"
+    />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <style>
+      body {
+        font-family: "Spline Sans", "Noto Sans", sans-serif;
+      }
+    </style>
+  </head>
+  <body class="bg-[#f9fbfa] min-h-screen flex flex-col justify-between">
+    <div id="quiz-container"></div>
+
+    <script>
+      const questions = [
+        {
+          word: "Kitap",
+          options: ["Book", "Table", "Chair", "Pen", "Notebook"],
+          correct: "Book",
+        },
+        {
+          word: "Kalem",
+          options: ["Chair", "Pen", "Table", "Notebook", "Phone"],
+          correct: "Pen",
+        },
+        {
+          word: "Masa",
+          options: ["Chair", "Notebook", "Table", "Window", "Light"],
+          correct: "Table",
+        },
+      ];
+
+      let currentQuestion = 0;
+      let answers = [];
+
+      function renderQuestion() {
+        const question = questions[currentQuestion];
+        document.getElementById("quiz-container").innerHTML = `
+          <div class="p-4">
+            <div class="rounded bg-[#d3e4de] mb-4">
+              <div class="h-2 rounded bg-[#0f3729]" style="width: ${(100 / questions.length) * (currentQuestion + 1)}%;"></div>
+            </div>
+            <h3 class="text-[#101916] text-2xl font-bold text-center pb-2">Match the Turkish Word</h3>
+            <h1 class="text-[#101916] text-[32px] font-bold text-center pb-4">${question.word}</h1>
+            <div id="options" class="flex flex-col gap-3 max-w-md mx-auto">
+              ${question.options
+                .map(
+                  (option) => `
+                <button onclick="selectAnswer('${option}')" class="option-btn bg-[#e9f1ee] text-[#101916] font-bold py-2 rounded-full hover:bg-[#cfe5dc] transition w-full">
+                  ${option}
+                </button>`
+                )
+                .join("")}
+            </div>
+            <div class="flex justify-center mt-4">
+              <p id="feedback" class="text-lg font-semibold text-center"></p>
+            </div>
+          </div>
+          <div class="flex p-4">
+            <button id="continueBtn" onclick="nextQuestion()" disabled class="bg-[#999] text-white font-bold py-3 px-5 w-full rounded-full">
+              Continue
+            </button>
+          </div>
+        `;
+      }
+
+      function selectAnswer(selected) {
+        const question = questions[currentQuestion];
+        const isCorrect = selected === question.correct;
+
+        answers.push({
+          word: question.word,
+          selected,
+          correct: question.correct,
+          isCorrect,
+        });
+
+        // Feedback & coloring
+        document.querySelectorAll(".option-btn").forEach((btn) => {
+          btn.disabled = true;
+          if (btn.innerText === question.correct) {
+            btn.classList.add("bg-green-200");
+          }
+          if (btn.innerText === selected && !isCorrect) {
+            btn.classList.add("bg-red-200");
+          }
+        });
+
+        const feedback = document.getElementById("feedback");
+        feedback.textContent = isCorrect ? "? Correct!" : `? Wrong! The correct answer is "${question.correct}".`;
+        feedback.classList.add(isCorrect ? "text-green-700" : "text-red-700");
+
+        document.getElementById("continueBtn").disabled = false;
+        document.getElementById("continueBtn").classList.remove("bg-[#999]");
+        document.getElementById("continueBtn").classList.add("bg-[#0f3729]");
+      }
+
+      function nextQuestion() {
+        currentQuestion++;
+        if (currentQuestion < questions.length) {
+          renderQuestion();
+        } else {
+          showResults();
+        }
+      }
+
+      function showResults() {
+        let correctCount = answers.filter((a) => a.isCorrect).length;
+        document.getElementById("quiz-container").innerHTML = `
+          <div class="text-center py-10 px-4 text-[#101916]">
+            <h2 class="text-3xl font-bold mb-4">?? Quiz Completed!</h2>
+            <p class="text-xl mb-6">You got <strong>${correctCount}</strong> out of <strong>${questions.length}</strong> correct.</p>
+            <div class="max-w-xl mx-auto text-left">
+              ${answers
+                .map(
+                  (a, index) => `
+                <div class="mb-3 p-3 rounded border ${
+                  a.isCorrect ? "border-green-300 bg-green-50" : "border-red-300 bg-red-50"
+                }">
+                  <strong>Q${index + 1}:</strong> ${a.word} › <em>${a.selected}</em> 
+                  ${a.isCorrect ? "?" : `? (Correct: ${a.correct})`}
+                </div>`
+                )
+                .join("")}
+            </div>
+          </div>
+        `;
+      }
+
+      // Start
+      renderQuestion();
+    </script>
+  </body>
+</html>
